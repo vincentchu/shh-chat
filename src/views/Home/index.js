@@ -1,9 +1,13 @@
+// @flow
 import React from 'react'
 
+import ChatPartners from './ChatPartners'
+
 const Jumbotron = () => (
-  <div className="jumbotron jumbotron-fluid">
+  <div className="jumbotron">
     <div className="container">
       <h1 className="display-4">Shh... Chat</h1>
+      <p className="lead">Secure, p2p chat DApp using the Ethereum Whisper protocol</p>
     </div>
   </div>
 )
@@ -17,7 +21,7 @@ const Home = () => (
         lorem ipsum
       </div>
       <div className="col-4">
-        lorem ipsum
+        <ChatPartners />
       </div>
     </div>
   </div>
