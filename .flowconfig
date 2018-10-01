@@ -1,0 +1,16 @@
+[ignore]
+.*/node_modules/react-timeago/lib/language-strings/.*
+.*/node_modules/react-timeago/lib/dateParser\.js\.flow
+.*/node_modules/react-timeago/lib/formatters/buildFormatter\.js\.flow
+.*/node_modules/fbjs/lib/partitionObjectByKey\.js\.flow
+.*/node_modules/redux-form/.*\.js\.flow
+.*/node_modules/react-number-format/.*
+.*/node_modules/oboe/test/json/incomplete.json
+.*/node_modules/react-timeago/lib/index.js.flow
+
+[include]
+
+[libs]
+
+[options]
+suppress_comment= \\(.\\|\n\\)*\\$FlowFixMe

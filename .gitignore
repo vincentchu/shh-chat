@@ -1,0 +1,6 @@
+node_modules/
+build/
+private-keys.json
+.env
+.vscode/
+
