@@ -13,13 +13,28 @@ type ChatPartnersType ={
   partners: Partner[],
 }
 
+const displayAddr = (addr: string): string => {
+  const firstPart = addr.slice(0, 8)
+  const lastPart = addr.slice(-7, -1)
+
+  return `${firstPart}...${lastPart}`
+}
+
 const PartnerRow = (props: { partner: Partner }) => {
-  const { partner } = props
+  const { address, publicKey } = props.partner
+  const isYou = address.toLowerCase() === window._coinbase
 
   return (
-    <li>
-      { partner.address }
-    </li>
+    <div className="row">
+      <p>
+        Address: { displayAddr(address) } { isYou && '(you)' }<br />
+        PublicKey: { publicKey }
+      </p>
+
+      <button className="btn btn-primary btn-sm" disabled={isYou}>
+        Start Chat
+      </button>
+    </div>
   )
 }
 
@@ -29,12 +44,26 @@ const ChatPartners = (props: ChatPartnersType) => {
   return (
     <div className="container">
       <div className="row">
-        <h4>Available to Chat</h4>
+        <h4>Become Available</h4>
+      </div>
+
+      <div className="row" style={{ marginBottom: '20px' }}>
+        <button className="btn btn-primary">
+          Become Available
+        </button>
       </div>
 
       <div className="row">
-        { partners.map((partner, idx) => <PartnerRow key={idx} partner={partner} />)}
+        <h4>Available to Chat</h4>
       </div>
+
+      { (partners.length === 0) && (
+        <div className="row">
+          Forever alone ...
+        </div>
+      ) }
+
+      { partners.map((partner, idx) => <PartnerRow key={idx} partner={partner} />)}
     </div>
   )
 }

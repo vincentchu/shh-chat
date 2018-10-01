@@ -23,7 +23,10 @@ class App extends React.Component<PropsType, StateType> {
     window._web3 = new Web3(window.ethereum)
     window._shh = window._web3.shh
 
-    this.setState({ isLoaded: true })
+    window._web3.eth.getCoinbase().then((coinbase) => {
+      window._coinbase = coinbase
+      this.setState({ isLoaded: true })
+    })
 
     // const shh = window._web3.shh
     // window._shh = shh
