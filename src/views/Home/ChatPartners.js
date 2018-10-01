@@ -50,6 +50,8 @@ const loader = (dispatch: Function) => {
             dispatch(addPartner({
               address: tx.from,
               publicKey: tx.input,
+              blockNumber: i,
+              hash: tx.hash,
             }))
           }
         })

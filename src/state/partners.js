@@ -1,13 +1,23 @@
 // @flow
+import { uniqBy } from 'ramda'
 
 export type Partner = {
   address: string,
   publicKey: string,
+  blockNumber: number,
+  hash: string,
 }
 
 export type PartnersStore = Partner[]
 
 const ADD_PARTNER = 'state-partners/ADD_PARTNER'
+
+const dedupe = (existing: Partner[], partner: Partner): Partner[] => {
+  const dedupedByAddr = uniqBy((p: Partner) => p.address, [ partner ].concat(existing))
+  const dedupedByHash = uniqBy((p: Partner) => p.hash, dedupedByAddr)
+
+  return dedupedByHash
+}
 
 export const reducer = (
   state: PartnersStore = [],
@@ -19,7 +29,7 @@ export const reducer = (
       const { partner } = action
 
       if (partner) {
-        return state.slice().concat(partner)
+        return dedupe(state.slice(), partner)
       }
 
       return state
