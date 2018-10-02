@@ -26,6 +26,20 @@ const PartnerRow = (props: { partner: Partner, dispatch: Function }) => {
   const { address, publicKey } = props.partner
   const isYou = address.toLowerCase() === window._coinbase
 
+  const onStart = () => {
+    const shh = window._web3.shh
+    const postParams = {
+      ttl: 70,
+      powTarget: 2.5,
+      powTime: 2,
+      payload: window._web3.utils.toHex('hello, world'),
+      pubKey: publicKey,
+    }
+    console.log('Start!', postParams)
+
+    shh.post(postParams).then((foo) => console.log('POSTED', foo))
+  }
+
   return (
     <div>
       <div className="row">
@@ -35,7 +49,7 @@ const PartnerRow = (props: { partner: Partner, dispatch: Function }) => {
         </p>
       </div>
       <div className="row">
-        <button className="btn btn-primary btn-sm" disabled={isYou}>
+        <button className="btn btn-primary btn-sm" disabled={isYou} onClick={onStart}>
           Start Chat
         </button>
       </div>
