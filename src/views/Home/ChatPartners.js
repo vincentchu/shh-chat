@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 
 import withLoader from '../with-loader'
 import {
-  startPollingForPartners,
+  startPollingForPartners, shhBroadcast,
   makeNewKey, pollForMessages, Bob,
 } from '../../eth-api'
 
@@ -27,7 +27,8 @@ const PartnerRow = (props: { partner: Partner, dispatch: Function }) => {
   const isYou = address.toLowerCase() === window._coinbase
 
   const onStart = () => makeNewKey(dispatch).then((key) => {
-    const shh = window._web3.shh
+    pollForMessages(key.filterId || '', dispatch)
+    window._handshaker.setCounterparty(publicKey)
 
     const payload = {
       timestamp: new Date().getTime(),
@@ -38,16 +39,7 @@ const PartnerRow = (props: { partner: Partner, dispatch: Function }) => {
       },
     }
 
-    const postParams = {
-      ttl: 70,
-      powTarget: 2.5,
-      powTime: 2,
-      payload: window._web3.utils.toHex(JSON.stringify(payload)),
-      pubKey: publicKey,
-    }
-    console.log('Start!', postParams)
-
-    shh.post(postParams).then((foo) => console.log('POSTED', foo))
+    shhBroadcast(publicKey, payload)
   })
 
   return (

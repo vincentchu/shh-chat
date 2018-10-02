@@ -81,11 +81,26 @@ export const pollForMessages = (filterId: string, dispatch: Function) => {
 
       console.log('RECV messges', mesgs)
 
+      window._handshaker.accept(mesgs, dispatch)
       dispatch(addMessages(mesgs))
     })
 
-    getMesgs.then(() => setTimeout(poller, 5000))
+    getMesgs.then(() => setTimeout(poller, 1000))
   }
 
   poller()
+}
+
+export const shhBroadcast = (publicKey: string, payload: Object) => {
+  const shh = window._web3.shh
+
+  const postParams = {
+    ttl: 70,
+    powTarget: 2.5,
+    powTime: 2,
+    payload: window._web3.utils.toHex(JSON.stringify(payload)),
+    pubKey: publicKey,
+  }
+
+  shh.post(postParams).then((whisperTx) => console.log('Posted', whisperTx, postParams))
 }

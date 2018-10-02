@@ -16,8 +16,8 @@ const MessageRow = (props: MessageRowProps) => {
       <div className="col-2">
         <TimeAgo date={new Date(message.timestamp)} />
       </div>
-      <div className="col-10">
-        <Json src={message.payload} name={false} />
+      <div className="col-10" style={{ overflow: 'hidden' }}>
+        <Json src={message} name={false} />
       </div>
     </div>
   )
