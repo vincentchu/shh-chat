@@ -3,14 +3,13 @@ import React from 'react'
 import { connect } from 'react-redux'
 
 import withLoader from '../with-loader'
-import { addPartner } from '../../state/partners'
+import { findPartners, startPollingForPartners, Bob } from '../../eth-api'
 
 import type { Partner, PartnersStore } from '../../state/partners'
 
-const Bob = '0x8691bf25ce4a56b15c1f99c944dc948269031801'
-
 type ChatPartnersType ={
   partners: Partner[],
+  dispatch: Function,
 }
 
 const displayAddr = (addr: string): string => {
@@ -20,15 +19,15 @@ const displayAddr = (addr: string): string => {
   return `${firstPart}...${lastPart}`
 }
 
-const PartnerRow = (props: { partner: Partner }) => {
+const PartnerRow = (props: { partner: Partner, dispatch: Function }) => {
   const { address, publicKey } = props.partner
   const isYou = address.toLowerCase() === window._coinbase
 
   return (
     <div className="row">
       <p>
-        Address: { displayAddr(address) } { isYou && '(you)' }<br />
-        PublicKey: { publicKey }
+        <b>Address:</b> { displayAddr(address) } { isYou && '(you)' }<br />
+        <b>PublicKey:</b> { publicKey }
       </p>
 
       <button className="btn btn-primary btn-sm" disabled={isYou}>
@@ -39,7 +38,24 @@ const PartnerRow = (props: { partner: Partner }) => {
 }
 
 const ChatPartners = (props: ChatPartnersType) => {
-  const { partners } = props
+  const { partners, dispatch } = props
+
+  const becomeAvailable = () => {
+    const web3 = window._web3
+    const txParams = {
+      from: window._coinbase,
+      to: Bob,
+      value: web3.utils.toWei('20', 'gwei'),
+      data: web3.utils.toHex(new Date().toString()),
+      gasLimit: '30000',
+    }
+
+    console.log('TXparams', txParams)
+    web3.eth.sendTransaction(txParams).then((foo, bar) => {
+      console.log('FOO', foo, bar)
+    })
+  }
+
 
   return (
     <div className="container">
@@ -48,7 +64,7 @@ const ChatPartners = (props: ChatPartnersType) => {
       </div>
 
       <div className="row" style={{ marginBottom: '20px' }}>
-        <button className="btn btn-primary">
+        <button className="btn btn-primary" onClick={becomeAvailable}>
           Become Available
         </button>
       </div>
@@ -63,30 +79,17 @@ const ChatPartners = (props: ChatPartnersType) => {
         </div>
       ) }
 
-      { partners.map((partner, idx) => <PartnerRow key={idx} partner={partner} />)}
+      { partners.map((partner, idx) => (
+        <PartnerRow key={idx} partner={partner} dispatch={dispatch} />
+      )) }
     </div>
   )
 }
 
 const loader = (dispatch: Function) => {
-  const eth = window._web3.eth
+  startPollingForPartners(dispatch)
 
-  return eth.getBlockNumber().then((blockNumber) => {
-    for (let i = 0; i < blockNumber; i++) {
-      eth.getBlock(i, true).then((block) => {
-        block.transactions.forEach((tx) => {
-          if (tx.to.toLowerCase() === Bob) {
-            dispatch(addPartner({
-              address: tx.from,
-              publicKey: tx.input,
-              blockNumber: i,
-              hash: tx.hash,
-            }))
-          }
-        })
-      })
-    }
-  })
+  return findPartners(dispatch)
 }
 
 const mapStateToProps = (state: { partners: PartnersStore }) => {
