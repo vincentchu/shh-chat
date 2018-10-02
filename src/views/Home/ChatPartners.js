@@ -3,7 +3,10 @@ import React from 'react'
 import { connect } from 'react-redux'
 
 import withLoader from '../with-loader'
-import { findPartners, startPollingForPartners, Bob } from '../../eth-api'
+import {
+  findPartners, startPollingForPartners,
+  makeNewKey, pollForMessages, Bob,
+} from '../../eth-api'
 
 import type { Partner, PartnersStore } from '../../state/partners'
 
@@ -24,15 +27,18 @@ const PartnerRow = (props: { partner: Partner, dispatch: Function }) => {
   const isYou = address.toLowerCase() === window._coinbase
 
   return (
-    <div className="row">
-      <p>
-        <b>Address:</b> { displayAddr(address) } { isYou && '(you)' }<br />
-        <b>PublicKey:</b> { publicKey }
-      </p>
-
-      <button className="btn btn-primary btn-sm" disabled={isYou}>
-        Start Chat
-      </button>
+    <div>
+      <div className="row">
+        <p>
+          <b>Address:</b> { displayAddr(address) } { isYou && '(you)' }<br />
+          <b>PublicKey:</b> { publicKey }
+        </p>
+      </div>
+      <div className="row">
+        <button className="btn btn-primary btn-sm" disabled={isYou}>
+          Start Chat
+        </button>
+      </div>
     </div>
   )
 }
@@ -40,22 +46,20 @@ const PartnerRow = (props: { partner: Partner, dispatch: Function }) => {
 const ChatPartners = (props: ChatPartnersType) => {
   const { partners, dispatch } = props
 
-  const becomeAvailable = () => {
+  const becomeAvailable = () => makeNewKey(dispatch).then((whisperKey) => {
     const web3 = window._web3
-    const txParams = {
+    const { publicKey, filterId } = whisperKey
+
+    pollForMessages(filterId || '', dispatch)
+
+    return web3.eth.sendTransaction({
       from: window._coinbase,
       to: Bob,
       value: web3.utils.toWei('20', 'gwei'),
-      data: web3.utils.toHex(new Date().toString()),
+      data: web3.utils.toHex(publicKey),
       gasLimit: '30000',
-    }
-
-    console.log('TXparams', txParams)
-    web3.eth.sendTransaction(txParams).then((foo, bar) => {
-      console.log('FOO', foo, bar)
     })
-  }
-
+  })
 
   return (
     <div className="container">

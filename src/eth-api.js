@@ -2,8 +2,13 @@
 import { flatten } from 'ramda'
 
 import { addPartners } from './state/partners'
-import type { Partner } from './state/partners'
+import { updateKey } from './state/whisper'
+import { addMessages } from './state/messages'
 
+import type { Partner } from './state/partners'
+import type { WhisperKey } from './state/whisper'
+
+export const Alice = '0xdda6ef2ff259928c561b2d30f0cad2c2736ce8b6'
 export const Bob = '0x8691bf25ce4a56b15c1f99c944dc948269031801'
 
 export const findPartners = (dispatch: Function): Promise<Partner[]> => {
@@ -29,8 +34,6 @@ export const findPartners = (dispatch: Function): Promise<Partner[]> => {
 
     return Promise.all(blockPromises).then((partnersArr) => {
       const partners: Partner[] = flatten(partnersArr)
-      console.log('PART', partners)
-
       dispatch(addPartners(partners))
 
       return partners
@@ -40,6 +43,34 @@ export const findPartners = (dispatch: Function): Promise<Partner[]> => {
 
 export const startPollingForPartners = (dispatch: Function) => {
   const poller = () => findPartners(dispatch).then(() => setTimeout(poller, 5000))
+
+  poller()
+}
+
+export const makeNewKey = (dispatch: Function): Promise<WhisperKey> => {
+  const shh = window._shh
+
+  return shh.newKeyPair().then((keyId) => Promise.all([
+    shh.getPublicKey(keyId),
+    shh.newMessageFilter({ privateKeyId: keyId }),
+  ]).then(([ publicKey, filterId ]) => {
+    const whisperKey = { keyId, publicKey, filterId }
+    dispatch(updateKey(whisperKey))
+
+    return whisperKey
+  }))
+}
+
+export const pollForMessages = (filterId: string, dispatch: Function) => {
+  const shh = window._web3.shh
+  const poller = () => {
+    shh.getFilterMessages(filterId).then((mesgs) => {
+      console.log('MESSAGES', mesgs)
+      dispatch(addMessages([]))
+
+      return setTimeout(poller, 5000)
+    })
+  }
 
   poller()
 }
