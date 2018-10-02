@@ -37,7 +37,10 @@ export const findPartners = (dispatch: Function): Promise<Partner[]> => {
 
     return Promise.all(blockPromises).then((partnersArr) => {
       const partners: Partner[] = filter((p) => !isNil(p), flatten(partnersArr))
-      dispatch(addPartners(partners))
+
+      if (partners.length > 0) {
+        dispatch(addPartners(partners))
+      }
 
       return partners
     })
@@ -79,10 +82,11 @@ export const pollForMessages = (filterId: string, dispatch: Function) => {
         return JSON.parse(mesgStr)
       })
 
-      console.log('RECV messges', mesgs)
-
-      window._handshaker.accept(mesgs, dispatch)
-      dispatch(addMessages(mesgs))
+      if (mesgs.length > 0) {
+        console.log('RECV messges', mesgs)
+        window._handshaker.accept(mesgs, dispatch)
+        dispatch(addMessages(mesgs))
+      }
     })
 
     getMesgs.then(() => setTimeout(poller, 1000))
