@@ -2,6 +2,7 @@
 import React from 'react'
 
 import ChatPartners from './ChatPartners'
+import MessageList from './MessageList'
 
 const Jumbotron = () => (
   <div className="jumbotron">
@@ -18,7 +19,7 @@ const Home = () => (
 
     <div className="row">
       <div className="col-8">
-        lorem ipsum
+        <MessageList />
       </div>
       <div className="col-4">
         <ChatPartners />
