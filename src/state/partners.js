@@ -1,5 +1,5 @@
 // @flow
-import { uniqBy } from 'ramda'
+import { uniqBy, sortBy } from 'ramda'
 
 export type Partner = {
   address: string,
@@ -10,26 +10,29 @@ export type Partner = {
 
 export type PartnersStore = Partner[]
 
-const ADD_PARTNER = 'state-partners/ADD_PARTNER'
+const ADD_PARTNERS = 'state-partners/ADD_PARTNERS'
 
-const dedupe = (existing: Partner[], partner: Partner): Partner[] => {
-  const dedupedByAddr = uniqBy((p: Partner) => p.address, [ partner ].concat(existing))
-  const dedupedByHash = uniqBy((p: Partner) => p.hash, dedupedByAddr)
+const dedupe = (existing: Partner[], partners: Partner[]): Partner[] => {
+  const dedupedByHash = uniqBy((p: Partner) => p.hash, partners.concat(existing))
+  const dedupedByAddr = uniqBy(
+    (p: Partner) => p.address,
+    sortBy((p: Partner) => -p.blockNumber, dedupedByHash)
+  )
 
-  return dedupedByHash
+  return dedupedByAddr
 }
 
 export const reducer = (
   state: PartnersStore = [],
-  action: { type: string, partner?: Partner }
+  action: { type: string, partners?: Partner[] }
 ): PartnersStore => {
 
   switch (action.type) {
-    case ADD_PARTNER: {
-      const { partner } = action
+    case ADD_PARTNERS: {
+      const { partners } = action
 
-      if (partner) {
-        return dedupe(state.slice(), partner)
+      if (partners) {
+        return dedupe(state.slice(), partners)
       }
 
       return state
@@ -40,7 +43,7 @@ export const reducer = (
   }
 }
 
-export const addPartner = (partner: Partner) => ({
-  type: ADD_PARTNER,
-  partner,
+export const addPartners = (partners: Partner[]) => ({
+  type: ADD_PARTNERS,
+  partners,
 })
