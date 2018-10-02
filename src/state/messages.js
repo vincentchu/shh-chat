@@ -11,11 +11,11 @@ export type MessagesStore = Message[]
 const ADD_MESSAGES = 'state-messages/ADD_MESSAGES'
 
 const InitialState = [
-  {
-    timestamp: new Date().getTime(),
-    messageType: 'START',
-    payload: { foo: 'bar', baz: 'bif' },
-  },
+  // {
+  //   timestamp: new Date().getTime(),
+  //   messageType: 'START',
+  //   payload: { foo: 'bar', baz: 'bif' },
+  // },
 ]
 
 export const reducer = (

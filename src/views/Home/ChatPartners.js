@@ -4,13 +4,13 @@ import { connect } from 'react-redux'
 
 import withLoader from '../with-loader'
 import {
-  findPartners, startPollingForPartners,
+  startPollingForPartners,
   makeNewKey, pollForMessages, Bob,
 } from '../../eth-api'
 
 import type { Partner, PartnersStore } from '../../state/partners'
 
-type ChatPartnersType ={
+type ChatPartnersType = {
   partners: Partner[],
   dispatch: Function,
 }
@@ -23,29 +23,39 @@ const displayAddr = (addr: string): string => {
 }
 
 const PartnerRow = (props: { partner: Partner, dispatch: Function }) => {
-  const { address, publicKey } = props.partner
+  const { dispatch, partner: { address, publicKey } } = props
   const isYou = address.toLowerCase() === window._coinbase
 
-  const onStart = () => {
+  const onStart = () => makeNewKey(dispatch).then((key) => {
     const shh = window._web3.shh
+
+    const payload = {
+      timestamp: new Date().getTime(),
+      messageType: 'START',
+      payload: {
+        publicKey: key.publicKey,
+        senderAddr: window._coinbase,
+      },
+    }
+
     const postParams = {
       ttl: 70,
       powTarget: 2.5,
       powTime: 2,
-      payload: window._web3.utils.toHex('hello, world'),
+      payload: window._web3.utils.toHex(JSON.stringify(payload)),
       pubKey: publicKey,
     }
     console.log('Start!', postParams)
 
     shh.post(postParams).then((foo) => console.log('POSTED', foo))
-  }
+  })
 
   return (
     <div>
       <div className="row">
         <p>
           <b>Address:</b> { displayAddr(address) } { isYou && '(you)' }<br />
-          <b>PublicKey:</b> { publicKey }
+          <b>PublicKey:</b> { publicKey.slice(0, 10) + '...' }
         </p>
       </div>
       <div className="row">
@@ -71,7 +81,7 @@ const ChatPartners = (props: ChatPartnersType) => {
       to: Bob,
       value: web3.utils.toWei('20', 'gwei'),
       data: web3.utils.toHex(publicKey),
-      gasLimit: '30000',
+      gasLimit: '50000',
     })
   })
 
@@ -107,7 +117,7 @@ const ChatPartners = (props: ChatPartnersType) => {
 const loader = (dispatch: Function) => {
   startPollingForPartners(dispatch)
 
-  return findPartners(dispatch)
+  return Promise.resolve(1)
 }
 
 const mapStateToProps = (state: { partners: PartnersStore }) => {
