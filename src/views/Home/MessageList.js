@@ -4,6 +4,7 @@ import Json from 'react-json-view'
 import TimeAgo from 'react-timeago'
 
 import type { Message, MessagesStore } from '../../state/messages'
+import type { VideoStore } from '../../state/video'
 
 type MessageRowProps = {
   message: Message,
@@ -23,15 +24,36 @@ const MessageRow = (props: MessageRowProps) => {
   )
 }
 
+type VideoProps = {
+  video: MediaStream,
+}
+
+const Video = (props: VideoProps) => {
+  const { video } = props
+
+  return (
+    <div className="row">
+      <h4>WebRTC Video</h4>
+      <video
+        style={{ width: '100%', height: '80%' }}
+        src={URL.createObjectURL(video)} autoPlay playsinline controls muted
+      />
+    </div>
+  )
+}
+
 type MessageListProps = {
   messages: Message[],
+  video: ?MediaStream,
 }
 
 const MessageList = (props: MessageListProps) => {
-  const { messages } = props
+  const { messages, video } = props
 
   return (
     <div className="container">
+      { video && <Video video={video} />}
+
       <div className="row">
         <h4>Messages</h4>
       </div>
@@ -41,10 +63,10 @@ const MessageList = (props: MessageListProps) => {
   )
 }
 
-const mapStateToProps = (state: { messages: MessagesStore }) => {
-  const { messages } = state
+const mapStateToProps = (state: { messages: MessagesStore, video: VideoStore }) => {
+  const { messages, video } = state
 
-  return { messages }
+  return { messages, video: video.stream }
 }
 
 export default connect(mapStateToProps)(MessageList)

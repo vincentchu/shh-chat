@@ -1,11 +1,11 @@
 // @flow
 import { shhBroadcast } from './eth-api'
+import { addStream } from './state/video'
+
 import type { Message } from './state/messages'
 
 const GoogleStun = 'stun:stun.l.google.com:19302'
 const GoogleIceConfig = { iceServers: [ { urls: GoogleStun } ] }
-
-
 
 class HandshakeApi {
   peerConnection: RTCPeerConnection
@@ -25,6 +25,7 @@ class HandshakeApi {
 
     this.peerConnection.ontrack = (evt) => {
       console.log('Got remote stream', evt.streams)
+      this.dispatch && this.dispatch(addStream(evt.streams[0]))
     }
   }
 
