@@ -5,16 +5,16 @@ import ChatPartners from './ChatPartners'
 import MessageList from './MessageList'
 
 const Jumbotron = () => (
-  <div className="jumbotron">
+  <div className="jumbotron" style={{ padding: '10px' }}>
     <div className="container">
       <h1 className="display-4">Shh... Chat</h1>
-      <p className="lead">Secure, p2p chat DApp using the Ethereum Whisper protocol</p>
+      <p className="lead">P2P Video Chat DApp using the Ethereum Whisper protocol and WebRTC</p>
     </div>
   </div>
 )
 
 const Home = () => (
-  <div className="container">
+  <div className="container-fluid">
     <Jumbotron />
 
     <div className="row">

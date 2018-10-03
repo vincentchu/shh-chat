@@ -36,7 +36,7 @@ const Video = (props: VideoProps) => {
       <h4>WebRTC Video</h4>
       <video
         style={{ width: '100%', height: '80%' }}
-        src={URL.createObjectURL(video)} autoPlay playsinline controls muted
+        src={URL.createObjectURL(video)} autoPlay playsinline muted
       />
     </div>
   )
