@@ -12,14 +12,20 @@ class HandshakeApi {
   dispatch: ?Function
   counterpartyKey: ?string
   iceCandidates: RTCIceCandidate[]
+  shhReady: boolean
 
   rtcDataChannel: RTCDataChannel
 
   constructor() {
+    this.shhReady = false
     this.peerConnection = new RTCPeerConnection(GoogleIceConfig)
     this.iceCandidates = []
     this.peerConnection.onicecandidate = this.onIceCandidate.bind(this)
     this.rtcDataChannel = this.peerConnection.createDataChannel('data')
+
+    this.peerConnection.ontrack = (evt) => {
+      console.log('Got remote stream', evt.streams)
+    }
   }
 
   setCounterparty(key: string) {
@@ -34,11 +40,20 @@ class HandshakeApi {
     console.log('onIceCandidate: Received candidate', iceEvt.candidate, this.iceCandidates)
 
     if (iceEvt.candidate) {
-      this.iceCandidates.push(iceEvt.candidate)
+      if (this.shhReady) {
+        this.shh({
+          timestamp: new Date().getTime(),
+          messageType: 'CANDIDATE',
+          payload: { data: JSON.stringify(iceEvt.candidate) },
+        })
+
+      } else {
+        this.iceCandidates.push(iceEvt.candidate)
+      }
     }
   }
 
-  getStream() {
+  getStream(): Promise<void> {
     if (navigator.mediaDevices) {
       return navigator.mediaDevices.getUserMedia({ audio: false, video: true })
         .then((stream) => {
@@ -49,38 +64,35 @@ class HandshakeApi {
           })
         })
     }
-  }
 
-  listenForTrack() {
-    this.peerConnection.ontrack = (evt) => {
-      console.log('Got remote stream', evt.streams)
-    }
+    return Promise.resolve()
   }
 
   startHandshake(mesg: Message) {
     this.setCounterparty(mesg.payload.publicKey)
 
-    this.getStream()
-    this.peerConnection.createOffer({ offerToReceiveVideo: 1 })
-      .then((offer) => {
-        console.log('Created offer', offer)
+    this.getStream().then(() => {
+      this.peerConnection.createOffer()
+        .then((offer) => {
+          console.log('Created offer', offer)
 
-        return this.peerConnection.setLocalDescription(offer).then(() => {
-          console.log('Sending to friend')
-          this.shh({
-            timestamp: new Date().getTime(),
-            messageType: 'OFFER',
-            payload: { data: JSON.stringify(offer) },
+          return this.peerConnection.setLocalDescription(offer).then(() => {
+            console.log('Sending to friend')
+            this.shh({
+              timestamp: new Date().getTime(),
+              messageType: 'OFFER',
+              payload: { data: JSON.stringify(offer) },
+            })
           })
         })
-      })
+    })
   }
 
   receiveOffer(mesg: Message) {
+    this.shhReady = true
     const offer: RTCSessionDescriptionInit = JSON.parse(mesg.payload.data)
     console.log('Got offer', offer)
 
-    this.listenForTrack()
     this.peerConnection.setRemoteDescription(offer)
     this.peerConnection.createAnswer()
       .then((answer) => {
@@ -104,6 +116,7 @@ class HandshakeApi {
   }
 
   receiveAnswer(mesg: Message) {
+    this.shhReady = true
     const answer: RTCSessionDescriptionInit = JSON.parse(mesg.payload.data)
     console.log('Got answer', answer)
 
