@@ -5,6 +5,8 @@ import type { Message } from './state/messages'
 const GoogleStun = 'stun:stun.l.google.com:19302'
 const GoogleIceConfig = { iceServers: [ { urls: GoogleStun } ] }
 
+
+
 class HandshakeApi {
   peerConnection: RTCPeerConnection
   dispatch: ?Function
@@ -36,10 +38,30 @@ class HandshakeApi {
     }
   }
 
+  getStream() {
+    if (navigator.mediaDevices) {
+      return navigator.mediaDevices.getUserMedia({ audio: false, video: true })
+        .then((stream) => {
+          console.log('GotStream', stream)
+          stream.getTracks().forEach((track) => {
+            console.log('Adding track', track)
+            this.peerConnection.addTrack(track)
+          })
+        })
+    }
+  }
+
+  listenForTrack() {
+    this.peerConnection.ontrack = (evt) => {
+      console.log('Got remote stream', evt.streams)
+    }
+  }
+
   startHandshake(mesg: Message) {
     this.setCounterparty(mesg.payload.publicKey)
 
-    this.peerConnection.createOffer()
+    this.getStream()
+    this.peerConnection.createOffer({ offerToReceiveVideo: 1 })
       .then((offer) => {
         console.log('Created offer', offer)
 
@@ -58,6 +80,7 @@ class HandshakeApi {
     const offer: RTCSessionDescriptionInit = JSON.parse(mesg.payload.data)
     console.log('Got offer', offer)
 
+    this.listenForTrack()
     this.peerConnection.setRemoteDescription(offer)
     this.peerConnection.createAnswer()
       .then((answer) => {
@@ -98,7 +121,7 @@ class HandshakeApi {
     const candidate: RTCIceCandidate = JSON.parse(mesg.payload.data)
 
     console.log('Got Candidate', candidate)
-    this.peerConnection.addIceCandidate()
+    this.peerConnection.addIceCandidate(candidate)
       .then(() => console.log('Added ice candidate', candidate))
       .catch((err) => console.log('error adding ice candidate', err, candidate))
   }

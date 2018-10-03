@@ -106,5 +106,10 @@ export const shhBroadcast = (publicKey: string, payload: Object) => {
     pubKey: publicKey,
   }
 
-  shh.post(postParams).then((whisperTx) => console.log('Posted', whisperTx, postParams))
+  shh.post(postParams)
+    .then((whisperTx) => console.log('Posted', whisperTx, postParams))
+    .catch((err) => {
+      console.log('Error posting', err)
+      return shh.post(postParams)
+    })
 }
