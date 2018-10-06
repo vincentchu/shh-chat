@@ -3,7 +3,7 @@
 Proof-of-concept of bootstrapping a WebRTC connection using the [Whisper protocol](https://github.com/ethereum/wiki/wiki/Whisper) as a signalling channel
 
 
-![Architecture](./WebRTC_Whisper_architecture.png | width=200)
+![Architecture](https://github.com/vincentchu/shh-chat/blob/master/WebRTC_Whisper_architecture.png?raw=true | width=200)
 
 ## Using Whisper as a Signalling Channel
 
