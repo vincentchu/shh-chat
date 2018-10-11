@@ -42,7 +42,7 @@ web3.eth.sendTransaction({
 ```
 
 
-2. Bob geneates and sends his own PK to Alice, encrypting the content with Alice's PK
+2. Bob generates and sends his own PK to Alice, encrypting the content with Alice's PK
 
 ```js
 const payload = {
